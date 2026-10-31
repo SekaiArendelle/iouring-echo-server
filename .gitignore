@@ -1,0 +1,92 @@
+### Please run `python scripts/gen_dockerignore.py` after change this file ###
+
+# Python
+**/venv/
+**/.venv/
+dist/
+**/build*/
+*.egg-info/
+**/__pycache__/
+**/*.pyc
+
+# vscode
+.vscode/
+
+# release dir, $target-pltxt2htm-[debug|release]
+**/*-pltxt2htm*/
+
+# lcov coverage report (extracted pltxt2htm-codecov.tar.xz)
+/codecov/
+
+# archive
+**/*.7z
+**/*.gz
+**/*.xz
+**/*.tar
+**/*.zip
+
+# my temporary file
+*.ignore*
+
+# project-wide compiler temp (created by `pixi run prepare-tmp`)
+.tmp/
+
+# Windows
+*.lnk
+
+# clangd
+compile_commands.json
+.cache
+
+# MacOS
+**/.DS_Store
+
+# clang fuzzer crashing file
+**/crash-*
+**/oom-*
+**/slow-unit-*
+
+# library
+*.lib
+*.dll
+*.a
+*.so
+
+# object file
+*.o
+
+# executable
+*.exe
+
+# debug file
+*.pdb
+
+# Rust
+**/target/
+**/Cargo.lock
+
+# csharp
+csharp/obj/
+csharp/bin/
+
+# Visual Studio
+**/vs2026/
+
+# ninja
+**/.ninja_log
+**/.ninja_lock
+
+# generated clang-format rules (scripts/gen_format_ninja.py)
+format_cpp.ninja
+
+# docsgen
+**/docs/
+
+# pixi
+**/.pixi
+
+# Reasonix
+**/.reasonix
+
+# OpenCode
+.opencode

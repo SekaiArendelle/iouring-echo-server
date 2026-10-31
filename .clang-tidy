@@ -1,0 +1,32 @@
+# clang-analyzer-cplusplus.Move does not correctly model our C++23 explicit-object
+# move assignment operators and reports their destination objects as moved-from.
+Checks: >
+  modernize-use-*,
+  -modernize-use-trailing-return-type,
+  modernize-avoid-bind,
+  cppcoreguidelines-pro-type-typeid,
+  cppcoreguidelines-narrowing-conversions,
+  cppcoreguidelines-avoid-non-const-global-variables,
+  cert-dcl03-c,
+  readability-else-after-return,
+  readability-braces-around-statements,
+  readability-make-member-function-const,
+  misc-const-correctness,
+  performance-inefficient-algorithm,
+  performance-noexcept-move-constructor,
+  security.insecureAPI.*,
+  bugprone-suspicious-*,
+  bugprone-argument-comment,
+  bugprone-integer-division,
+  -clang-analyzer-cplusplus.Move
+
+HeaderFilterRegex: '.*(^|[/\\])include[/\\]pltxt2htm[/\\].*'
+SystemHeaders: false
+
+WarningsAsErrors: '*'
+
+CheckOptions:
+  - key:   misc-const-correctness.TransformValues
+    value: true
+
+FormatStyle: none
