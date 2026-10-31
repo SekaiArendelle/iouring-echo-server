@@ -22,19 +22,17 @@ int main() {
 
     while (true) {
         auto l_conn = accept(l_sock, nullptr, nullptr);
+        constexpr size_t l_rbuf_len{128};
+        char l_rbuf[l_rbuf_len]{};
 
         while (true) {
-            constexpr size_t l_rbuf_len{128};
-            char l_rbuf[l_rbuf_len]{};
-            while (true) {
-                ssize_t l_rres = read(l_conn, l_rbuf, l_rbuf_len);
-                if (l_rres <= 0) {
-                    break;
-                }
-                write(l_conn, l_rbuf, l_rres);
+            ssize_t l_rres = read(l_conn, l_rbuf, l_rbuf_len);
+            if (l_rres <= 0) {
+                break;
             }
-            close(l_conn);
+            write(l_conn, l_rbuf, l_rres);
         }
+        close(l_conn);
     }
 
     return 0;
