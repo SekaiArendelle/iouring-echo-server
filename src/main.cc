@@ -3,6 +3,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <liburing.h>
+
 int main() {
     auto l_sock = socket(AF_INET, SOCK_STREAM, 0);
     auto const l_address_in = sockaddr_in{
