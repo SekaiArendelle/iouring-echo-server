@@ -8,7 +8,7 @@ enum class OpType : unsigned {
     send,
 };
 
-struct Op {
+struct AcceptOp {
     OpType op_type;
     int fd;
     sockaddr_storage buffer;

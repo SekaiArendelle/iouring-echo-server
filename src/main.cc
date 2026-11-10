@@ -9,7 +9,7 @@
 #include "op.hh"
 
 static void queue_accept(io_uring* ring, int listen_fd) {
-    Op* op = (Op*)malloc(sizeof(Op));
+    AcceptOp* op = (AcceptOp*)malloc(sizeof(AcceptOp));
     if (op == nullptr) [[unlikely]] {
         __builtin_trap();
     }
@@ -56,7 +56,7 @@ int main() {
         io_uring_cqe* cqe;
         io_uring_wait_cqe(&ring, &cqe);
 
-        Op* op = (Op*)io_uring_cqe_get_data(cqe);
+        AcceptOp* op = (AcceptOp*)io_uring_cqe_get_data(cqe);
         int conn_sock = cqe->res;
         io_uring_cqe_seen(&ring, cqe);
 
