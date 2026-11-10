@@ -70,29 +70,27 @@ int main() {
 
         io_uring_cqe* cqe;
         io_uring_wait_cqe(&ring, &cqe);
+        int res = cqe->res;
+        io_uring_cqe_seen(&ring, cqe);
 
         switch (op_type) {
         case OpType::accept: {
             AcceptOp* accept_op = (AcceptOp*)io_uring_cqe_get_data(cqe);
-            int conn_sock = cqe->res;
-            io_uring_cqe_seen(&ring, cqe);
 
-            if (conn_sock < 0) {
-                fprintf(stderr, "accept %d: %s\n", -conn_sock, strerror(-conn_sock));
+            if (res < 0) {
+                fprintf(stderr, "accept %d: %s\n", -res, strerror(-res));
                 free(accept_op);
                 queue_accept(&ring, listen_sock);
                 continue;
             }
 
-            queue_recv(&ring, conn_sock);
+            queue_recv(&ring, res);
             op_type = OpType::recv;
 
             free(accept_op);
         } break;
         case OpType::recv: {
             RecvOp* recv_op = (RecvOp*)io_uring_cqe_get_data(cqe);
-            int res = cqe->res;
-            io_uring_cqe_seen(&ring, cqe);
 
             if (res < 0) {
                 // no need to release resources
