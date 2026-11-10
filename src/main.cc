@@ -41,6 +41,22 @@ static void queue_recv(io_uring* ring, int conn_sock) {
     io_uring_sqe_set_data(sqe, recv_op);
 }
 
+static void queue_send(io_uring* ring, RecvOp* recv_op, size_t len) {
+    SendOp* send_op = (SendOp*)malloc(sizeof(SendOp));
+    if (send_op == nullptr) [[unlikely]] {
+        __builtin_trap();
+    }
+    ::std::construct_at(send_op, recv_op);
+
+    io_uring_sqe* sqe = io_uring_get_sqe(ring);
+    if (sqe == nullptr) [[unlikely]] {
+        __builtin_trap();
+    }
+
+    io_uring_prep_send(sqe, recv_op->conn_sock, recv_op->buffer, len, MSG_NOSIGNAL);
+    io_uring_sqe_set_data(sqe, send_op);
+}
+
 int main() {
     auto listen_sock = socket(AF_INET, SOCK_STREAM, 0);
     auto const l_address_in = sockaddr_in{
@@ -71,11 +87,11 @@ int main() {
         io_uring_cqe* cqe;
         io_uring_wait_cqe(&ring, &cqe);
         int res = cqe->res;
-        io_uring_cqe_seen(&ring, cqe);
 
         switch (op_type) {
         case OpType::accept: {
             AcceptOp* accept_op = (AcceptOp*)io_uring_cqe_get_data(cqe);
+            io_uring_cqe_seen(&ring, cqe);
 
             if (res < 0) {
                 fprintf(stderr, "accept %d: %s\n", -res, strerror(-res));
@@ -91,27 +107,39 @@ int main() {
         } break;
         case OpType::recv: {
             RecvOp* recv_op = (RecvOp*)io_uring_cqe_get_data(cqe);
+            io_uring_cqe_seen(&ring, cqe);
 
             if (res < 0) {
                 // no need to release resources
                 __builtin_trap();
             }
-            else if (res > 0) {
-                write(recv_op->conn_sock, recv_op->buffer, res);
-                queue_recv(&ring, recv_op->conn_sock);
+            else if (res == 0) {
+                close(recv_op->conn_sock);
                 ::std::destroy_at(recv_op);
                 free(recv_op);
+                queue_accept(&ring, listen_sock);
+                op_type = OpType::accept;
                 continue;
             }
 
-            close(recv_op->conn_sock);
-            ::std::destroy_at(recv_op);
-            free(recv_op);
-            op_type = OpType::accept;
-            queue_accept(&ring, listen_sock);
+            queue_send(&ring, recv_op, res);
+            op_type = OpType::send;
         } break;
-        case OpType::send:
-            [[fallthrough]];
+        case OpType::send: {
+            SendOp* send_op = (SendOp*)io_uring_cqe_get_data(cqe);
+            io_uring_cqe_seen(&ring, cqe);
+
+            if (res < 0) [[unlikely]] {
+                __builtin_trap();
+            }
+            queue_recv(&ring, send_op->recv_op->conn_sock);
+            op_type = OpType::recv;
+
+            ::std::destroy_at(send_op->recv_op);
+            free(send_op->recv_op);
+            ::std::destroy_at(send_op);
+            free(send_op);
+        } break;
         default:
             [[unlikely]] {
                 __builtin_trap();

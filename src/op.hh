@@ -23,3 +23,7 @@ struct RecvOp {
         : conn_sock(conn_sock_) {
     }
 };
+
+struct SendOp {
+    RecvOp* recv_op;
+};
