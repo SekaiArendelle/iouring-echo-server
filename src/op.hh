@@ -9,8 +9,17 @@ enum class OpType : unsigned {
 };
 
 struct AcceptOp {
-    OpType op_type;
-    int fd;
     sockaddr_storage buffer;
     socklen_t len;
+};
+
+struct RecvOp {
+    static constexpr size_t len{128};
+
+    int conn_sock;
+    char buffer[len]{};
+
+    RecvOp(int conn_sock_) noexcept
+        : conn_sock(conn_sock_) {
+    }
 };
